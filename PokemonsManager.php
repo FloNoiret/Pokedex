@@ -1,7 +1,8 @@
 <?php
 
-class PokemonsManager
-{
+require("./Pokemon.php");
+
+class PokemonsManager {
 
     private $db;
 

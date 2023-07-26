@@ -34,15 +34,23 @@
         </div>
     </nav>
 
-    <main class="container">
-        <div class="card m-4" style="width: 18rem;">
-            <img src="..." class="card-img-top" alt="...">
-            <div class="card-body">
-                <h5 class="card-title">Card title</h5>
-                <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-                <a href="#" class="btn btn-warning">Modifier</a>
+    <?php
+    require("./PokemonsManager.php");
+    $manager = new PokemonsManager();
+    $pokemons = $manager->getAll();
+    ?>
+
+    <main class="container d-flex flex-wrap justify-content-center">
+        <?php foreach ($pokemons as $pokemon) : ?>
+            <div class="card m-4" style="width: 18rem;">
+                <img src="..." class="card-img-top" alt="<?= $pokemon->getName() ?>">
+                <div class="card-body">
+                    <h5 class="card-title"><?= $pokemon->getNumber() ?># <?php echo $pokemon->getName() ?></h5>
+                    <p class="card-text"><?= $pokemon->getDescription() ?></p>
+                    <a href="#" class="btn btn-warning">Modifier</a>
+                </div>
             </div>
-        </div>
+        <?php endforeach ?>
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>

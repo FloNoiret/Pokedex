@@ -37,19 +37,79 @@
     <?php
     require("./PokemonsManager.php");
     require("./TypesManager.php");
-    $manager = new PokemonsManager();
+    require("./ImagesManager.php");
+
+    $pokemonManager = new PokemonsManager();
+
     $typeManager = new TypesManager();
     $types = $typeManager->getAll();
+    $error = null;
+
 
     if ($_POST) {
         $number = $_POST["number"];
         $name = $_POST["name"];
         $description = $_POST["description"];
         $idType1 = $_POST["type1"];
-        $idType2 = $_POST["type2"] === "null" ? null : $_POST["type2"];}
+        $idType2 = $_POST["type2"] === "null" ? null : $_POST["type2"];
+
+        try {
+            // Check img size
+            if ($_FILES["image"]["size"] < 2000000) {
+                $imagesManager = new ImagesManager();
+                $fileName = $_FILES["image"]["name"];
+                if (!is_dir("upload/")) {
+                    mkdir("upload/");
+                }
+
+                // Check extension img name
+                $targetFile = "upload/{$fileName}";
+                $fileExtension = pathinfo($targetFile, PATHINFO_EXTENSION);
+                define("EXTENSIONS", ["png", "jpeg", "jpg", "webp"]);
+                // upload img
+                if (in_array(strtolower($fileExtension), EXTENSIONS)) {
+                    if (move_uploaded_file($_FILES["image"]["tmp_name"], $targetFile)) {
+                        $imagesManager = new ImagesManager();
+                        $image = new Image(["name" => $fileName, "path" => $targetFile]);
+                        $imagesManager->create($image);
+
+                        // Error message if problem is while upload
+                    } else {
+                        throw new Exception("Une erreur est survenue...");
+                    }
+                    // Error message if problem is the extension of the file
+                } else {
+                    throw new Exception("L'extension du fichier n'est pas correcte.");
+                }
+                // Error message if problem is the size of the file
+            } else {
+                throw new Exception("Le fichier soumis est trop important");
+            }
+            // Error message in its display variable
+        } catch (Exception $e) {
+            $error = $e->getMessage();
+        }
+        $idImage = $imagesManager->getLastImageId();
+        $newPokemon = new Pokemon([
+            "number" => $number,
+            "name" => $name,
+            "description" => $description,
+            "type1" => $idType1,
+            "type2" => $idType2,
+            "image" => $idImage,
+        ]);
+        $pokemonManager->create($newPokemon);
+        header("Location: index.php");
+    }
     ?>
 
     <main class="container">
+        <!-- Error Message with img problem exception info -->
+        <?php
+        if ($error) {
+            echo "<p class='alert alert-danger'>$error</p>";
+        } ?>
+
         <form method="POST" enctype="multipart/form-data">
             <label for="number" class="form-label">Numéro</label>
             <input type="number" name="number" placeholder="Le numéro du Pokémon" id="number" class="form-control" min=1 max=901>
